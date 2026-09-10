@@ -8,6 +8,13 @@
       "when": 1789058320614,
       "tag": "0000_deep_rockslide",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789061114439,
+      "tag": "0001_tranquil_luckman",
+      "breakpoints": true
     }
   ]
 }

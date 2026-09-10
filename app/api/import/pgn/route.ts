@@ -24,6 +24,6 @@ export async function POST(request: Request) {
   if (!parsed.length) return Response.json({ error: "No valid standard chess games were found.", details: errors }, { status: 400 });
   await ensureProfile(auth.user);
   const db = await getDb(); const now = Date.now();
-  for (const game of parsed) await db.insert(games).values({ id: crypto.randomUUID(), userId: auth.user.email, provider: "pgn", ...game, createdAt: now, updatedAt: now }).onConflictDoNothing();
+  for (const game of parsed) await db.insert(games).values({ id: crypto.randomUUID(), userId: auth.user.id, provider: "pgn", ...game, createdAt: now, updatedAt: now }).onConflictDoNothing();
   return Response.json({ added: parsed.length, errors });
 }

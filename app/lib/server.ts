@@ -1,16 +1,16 @@
-import { getChatGPTUser } from "../chatgpt-auth";
+import { getCurrentUser } from "./auth";
 import { getDb } from "../../db";
 import { profiles } from "../../db/schema";
 
 export async function authenticated() {
-  const user = await getChatGPTUser();
+  const user = await getCurrentUser();
   if (!user) return { user: null, response: Response.json({ error: "Sign in to continue." }, { status: 401 }) };
   return { user, response: null };
 }
 
-export async function ensureProfile(user: { email: string; displayName: string }) {
+export async function ensureProfile(user: { id: string; displayName: string }) {
   const now = Date.now();
-  await (await getDb()).insert(profiles).values({ userId: user.email, displayName: user.displayName, createdAt: now, updatedAt: now }).onConflictDoUpdate({ target: profiles.userId, set: { displayName: user.displayName, updatedAt: now } });
+  await (await getDb()).insert(profiles).values({ userId: user.id, displayName: user.displayName, createdAt: now, updatedAt: now }).onConflictDoUpdate({ target: profiles.userId, set: { displayName: user.displayName, updatedAt: now } });
 }
 
 export function safeJson<T>(value: string | null | undefined, fallback: T): T {

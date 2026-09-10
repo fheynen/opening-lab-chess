@@ -8,9 +8,9 @@ const titleCase = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g,
 
 export async function GET() {
   const auth = await authenticated(); if (!auth.user) return auth.response; const db = await getDb();
-  const reviews = await db.select().from(gameReviews).where(eq(gameReviews.userId, auth.user.email));
-  const moves = await db.select().from(moveReviews).where(eq(moveReviews.userId, auth.user.email));
-  const ownedGames = await db.select().from(games).where(eq(games.userId, auth.user.email)).orderBy(desc(games.playedAt));
+  const reviews = await db.select().from(gameReviews).where(eq(gameReviews.userId, auth.user.id));
+  const moves = await db.select().from(moveReviews).where(eq(moveReviews.userId, auth.user.id));
+  const ownedGames = await db.select().from(games).where(eq(games.userId, auth.user.id)).orderBy(desc(games.playedAt));
   const gamesReviewed = reviews.length; const provisional = gamesReviewed < 3;
   const phase = new Map<string, { moves: number; cp: number; errors: number; accuracy: number }>();
   const motifs = new Map<string, number>(); const classes = new Map<string, number>();

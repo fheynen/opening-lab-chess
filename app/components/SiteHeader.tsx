@@ -16,7 +16,7 @@ const analysisLinks: LinkItem[] = [
   { href: "/analyze/puzzles", label: "Personal puzzles", copy: "Drills from your games", icon: Sparkles },
 ];
 
-export function SiteHeader({ user }: { user: { displayName: string; email: string } | null }) {
+export function SiteHeader({ user }: { user: { displayName: string; username: string } | null }) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<"openings" | "analyze" | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,6 +29,11 @@ export function SiteHeader({ user }: { user: { displayName: string; email: strin
     document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
   }, []);
+
+  async function signOut() {
+    await fetch("/api/auth/signout", { method: "POST" });
+    window.location.assign("/");
+  }
 
   const dropdown = (id: "openings" | "analyze", label: string, links: LinkItem[]) => (
     <div className="nav-dropdown">
@@ -48,9 +53,10 @@ export function SiteHeader({ user }: { user: { displayName: string; email: strin
       <Link href="/" className={pathname === "/" ? "active" : ""} onClick={() => setMobileOpen(false)}>Home</Link>
       {dropdown("openings", "Openings", openingLinks)}
       {dropdown("analyze", "Analyze", analysisLinks)}
+      {user ? <button className="mobile-account-link" onClick={signOut}>Sign out @{user.username}</button> : <Link className="mobile-account-link" href="/account?mode=signin&returnTo=/" onClick={() => setMobileOpen(false)}>Sign in / Create account</Link>}
     </nav>
     <div className="account-control">
-      {user ? <><span className="account-avatar">{user.displayName.slice(0, 1).toUpperCase()}</span><span className="account-copy"><strong>{user.displayName}</strong><small>Progress synced</small></span><Link href="/signout-with-chatgpt?return_to=/">Sign out</Link></> : <Link href="/signin-with-chatgpt?return_to=/" className="sign-in-button">Sign in to save</Link>}
+      {user ? <><span className="account-avatar">{user.displayName.slice(0, 1).toUpperCase()}</span><span className="account-copy"><strong>{user.displayName}</strong><small>@{user.username} · synced</small></span><button className="account-signout" onClick={signOut}>Sign out</button></> : <Link href="/account?mode=signin&returnTo=/" className="sign-in-button">Sign in / Create account</Link>}
     </div>
   </header>;
 }

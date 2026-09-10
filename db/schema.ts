@@ -1,5 +1,36 @@
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
+export const accounts = sqliteTable("accounts", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull(),
+  usernameNormalized: text("username_normalized").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  passwordSalt: text("password_salt").notNull(),
+  passwordIterations: integer("password_iterations").notNull(),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+}, (table) => [
+  uniqueIndex("accounts_username_normalized_unique").on(table.usernameNormalized),
+]);
+
+export const accountSessions = sqliteTable("account_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  userId: text("user_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+  expiresAt: integer("expires_at").notNull(),
+  createdAt: integer("created_at").notNull(),
+  lastSeenAt: integer("last_seen_at").notNull(),
+}, (table) => [
+  index("account_sessions_user_idx").on(table.userId),
+  index("account_sessions_expiry_idx").on(table.expiresAt),
+]);
+
+export const authAttempts = sqliteTable("auth_attempts", {
+  usernameNormalized: text("username_normalized").primaryKey(),
+  failedCount: integer("failed_count").notNull(),
+  windowStartedAt: integer("window_started_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
   displayName: text("display_name"),

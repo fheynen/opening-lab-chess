@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { getChatGPTUser } from "./chatgpt-auth";
+import { getCurrentUser } from "./lib/auth";
 import { SiteHeader } from "./components/SiteHeader";
 import "./globals.css";
 
@@ -45,6 +45,6 @@ export default function RootLayout({
 }
 
 async function LayoutBody({ children }: { children: React.ReactNode }) {
-  const user = await getChatGPTUser();
-  return <><SiteHeader user={user ? { displayName: user.displayName, email: user.email } : null} />{children}<footer className="site-footer">Opening data and puzzles from Lichess · Engine analysis by Stockfish · Opening Lab keeps chess facts grounded in engine output.</footer></>;
+  const user = await getCurrentUser();
+  return <><SiteHeader user={user ? { displayName: user.displayName, username: user.username } : null} />{children}<footer className="site-footer">Opening data and puzzles from Lichess · Engine analysis by Stockfish · Opening Lab keeps chess facts grounded in engine output.</footer></>;
 }

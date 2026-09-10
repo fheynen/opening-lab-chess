@@ -35,10 +35,10 @@ export async function POST(request: Request) {
   for (const item of imported) {
     try {
       const parsed = parsePgn(String(item.pgn), username);
-      const result = await db.insert(games).values({ id: crypto.randomUUID(), userId: auth.user.email, provider: "chesscom", providerGameId: String(item.uuid || item.url), url: String(item.url || ""), ...parsed, whiteRating: Number((item.white as { rating?: number })?.rating) || parsed.whiteRating, blackRating: Number((item.black as { rating?: number })?.rating) || parsed.blackRating, speed: String(item.time_class || parsed.speed || ""), playedAt: Number(item.end_time) ? Number(item.end_time) * 1000 : parsed.playedAt, createdAt: now, updatedAt: now }).onConflictDoNothing();
+      const result = await db.insert(games).values({ id: crypto.randomUUID(), userId: auth.user.id, provider: "chesscom", providerGameId: String(item.uuid || item.url), url: String(item.url || ""), ...parsed, whiteRating: Number((item.white as { rating?: number })?.rating) || parsed.whiteRating, blackRating: Number((item.black as { rating?: number })?.rating) || parsed.blackRating, speed: String(item.time_class || parsed.speed || ""), playedAt: Number(item.end_time) ? Number(item.end_time) * 1000 : parsed.playedAt, createdAt: now, updatedAt: now }).onConflictDoNothing();
       if ((result as { meta?: { changes?: number } }).meta?.changes !== 0) added += 1;
     } catch { /* Skip one malformed upstream PGN. */ }
   }
-  await db.update(profiles).set({ chessComUsername: username, updatedAt: now }).where((await import("drizzle-orm")).eq(profiles.userId, auth.user.email));
+  await db.update(profiles).set({ chessComUsername: username, updatedAt: now }).where((await import("drizzle-orm")).eq(profiles.userId, auth.user.id));
   return Response.json({ added, found: imported.length, username });
 }

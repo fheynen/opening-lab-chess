@@ -2,6 +2,8 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export async function getDb() {
+  const testBinding = (globalThis as typeof globalThis & { __OPENING_LAB_TEST_DB?: D1Database }).__OPENING_LAB_TEST_DB;
+  if (testBinding) return drizzle(testBinding, { schema });
   const { env } = await import("cloudflare:workers");
   if (!env.DB) {
     throw new Error(

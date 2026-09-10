@@ -5,7 +5,7 @@ import { authenticated } from "../../../../lib/server";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await authenticated(); if (!auth.user) return auth.response; const { id } = await params; const db = await getDb();
-  const game = await db.select().from(games).where(and(eq(games.id, id), eq(games.userId, auth.user.email))).get();
+  const game = await db.select().from(games).where(and(eq(games.id, id), eq(games.userId, auth.user.id))).get();
   if (!game) return Response.json({ error: "Game not found." }, { status: 404 });
   if (game.analysisStatus === "complete") return Response.json({ error: "This game is already analyzed." }, { status: 409 });
   await db.update(games).set({ analysisStatus: "analyzing", analysisError: null, updatedAt: Date.now() }).where(eq(games.id, id));
