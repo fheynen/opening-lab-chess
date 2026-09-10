@@ -26,7 +26,12 @@ export function AuthPanel({ initialMode, returnTo }: { initialMode: "signin" | "
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      const data = await response.json() as { error?: string };
+      const responseText = await response.text();
+      let data: { error?: string } = {};
+      if (responseText) {
+        try { data = JSON.parse(responseText) as { error?: string }; }
+        catch { data = {}; }
+      }
       if (!response.ok) throw new Error(data.error || "Something went wrong. Please try again.");
       window.location.assign(returnTo);
     } catch (reason) {

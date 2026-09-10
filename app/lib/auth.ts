@@ -6,7 +6,8 @@ import { accounts, accountSessions, authAttempts, profiles } from "../../db/sche
 
 const SESSION_COOKIE = "opening_lab_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
-const PASSWORD_ITERATIONS = 310_000;
+// Cloudflare Workers enforce a maximum of 100,000 PBKDF2 iterations.
+const PASSWORD_ITERATIONS = 100_000;
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILED_ATTEMPTS = 12;
 const encoder = new TextEncoder();

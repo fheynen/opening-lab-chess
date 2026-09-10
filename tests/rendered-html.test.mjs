@@ -109,10 +109,11 @@ test("creates a native account, stores a password hash, and authenticates its se
   assert.match(cookie, /HttpOnly/);
   assert.match(cookie, /SameSite=Lax/);
 
-  const stored = DB._sqlite.prepare("SELECT username, password_hash, password_salt FROM accounts").get();
+  const stored = DB._sqlite.prepare("SELECT username, password_hash, password_salt, password_iterations FROM accounts").get();
   assert.equal(stored.username, "KnightRider");
   assert.notEqual(stored.password_hash, "correct horse battery staple");
   assert.ok(stored.password_salt);
+  assert.equal(stored.password_iterations, 100_000);
 
   const sessionCookie = cookie.split(";", 1)[0];
   const me = await render("/api/auth/me", { headers: { cookie: sessionCookie, accept: "application/json" } }, { DB });

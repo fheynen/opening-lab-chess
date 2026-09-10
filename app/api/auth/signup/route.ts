@@ -11,10 +11,15 @@ export async function POST(request: Request) {
   const invalidPassword = passwordError(password);
   if (invalidPassword) return Response.json({ error: invalidPassword }, { status: 400 });
 
-  const user = await createAccount(username, password);
-  if (user === "taken") return Response.json({ error: "That username is already taken." }, { status: 409 });
-  const response = Response.json({ user: { username: user.username, displayName: user.displayName } }, { status: 201 });
-  response.headers.set("Set-Cookie", await issueSession(user.id, request));
-  response.headers.set("Cache-Control", "no-store");
-  return response;
+  try {
+    const user = await createAccount(username, password);
+    if (user === "taken") return Response.json({ error: "That username is already taken." }, { status: 409 });
+    const response = Response.json({ user: { username: user.username, displayName: user.displayName } }, { status: 201 });
+    response.headers.set("Set-Cookie", await issueSession(user.id, request));
+    response.headers.set("Cache-Control", "no-store");
+    return response;
+  } catch (error) {
+    console.error("[auth] Account creation failed", error);
+    return Response.json({ error: "Opening Lab could not create the account. Please try again." }, { status: 500 });
+  }
 }
