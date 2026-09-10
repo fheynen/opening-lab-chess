@@ -6,25 +6,29 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "assets:stockfish": "node scripts/copy-stockfish.mjs",
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
-    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "build": "npm run assets:stockfish && WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern public/stockfish",
     "db:generate": "drizzle-kit generate",
-    "data:build": "node scripts/build-openings.mjs"
+    "data:build": "node scripts/build-openings.mjs",
+    "data:puzzles": "node scripts/build-puzzles.mjs"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
     "drizzle-orm": "0.45.2",
     "lucide-react": "^1.43.0",
-    "next": "16.2.6",
+    "next": "^16.3.4",
     "react": "19.2.6",
     "react-chessboard": "^5.12.1",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "stockfish": "18.0.8"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",

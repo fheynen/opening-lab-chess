@@ -112,8 +112,9 @@ function sideName(side: Color) {
   return side === "w" ? "White" : "Black";
 }
 
-export function OpeningTrainer() {
-  const [activePathId, setActivePathId] = useState("sicilian");
+export function OpeningTrainer({ initialPathId = "sicilian", initialOpeningId, initialDatabaseMode = false }: { initialPathId?: string; initialOpeningId?: string; initialDatabaseMode?: boolean }) {
+  const initialPath = studyPaths.find((path) => path.id === initialPathId) ?? studyPaths[0];
+  const [activePathId, setActivePathId] = useState(initialPath.id);
   const activePath =
     studyPaths.find((path) => path.id === activePathId) ?? studyPaths[0];
   const pathOpenings = useMemo(
@@ -121,15 +122,15 @@ export function OpeningTrainer() {
     [activePath],
   );
   const [selectedOpening, setSelectedOpening] = useState<Opening>(() =>
-    openings.find(studyPaths[0].matches) ?? openings[0],
+    openings.find((opening) => opening.id === initialOpeningId) ?? openings.find(initialPath.matches) ?? openings[0],
   );
   const lineMoves = useMemo(
     () => movesFor(selectedOpening),
     [selectedOpening],
   );
   const [moveIndex, setMoveIndex] = useState(0);
-  const [practiceSide, setPracticeSide] = useState<Color>(activePath.side);
-  const [orientation, setOrientation] = useState<"white" | "black">("black");
+  const [practiceSide, setPracticeSide] = useState<Color>(initialPath.side);
+  const [orientation, setOrientation] = useState<"white" | "black">(initialPath.side === "w" ? "white" : "black");
   const [mode, setMode] = useState<"practice" | "explore">("practice");
   const [feedback, setFeedback] = useState<Feedback>({
     kind: "idle",
@@ -138,7 +139,7 @@ export function OpeningTrainer() {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [hintVisible, setHintVisible] = useState(false);
   const [query, setQuery] = useState("");
-  const [databaseMode, setDatabaseMode] = useState(false);
+  const [databaseMode, setDatabaseMode] = useState(initialDatabaseMode);
   const [completed, setCompleted] = useState<string[]>([]);
   const [streak, setStreak] = useState(0);
 
@@ -151,9 +152,13 @@ export function OpeningTrainer() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        setCompleted(
-          JSON.parse(localStorage.getItem("opening-lab-completed") || "[]"),
-        );
+        const local: string[] = JSON.parse(localStorage.getItem("opening-lab-completed") || "[]");
+        setCompleted(local);
+        fetch("/api/progress", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ completed: local }) })
+          .then((response) => response.ok ? fetch("/api/progress") : null)
+          .then((response) => response?.json() as Promise<{ completed?: string[] }> | undefined)
+          .then((data) => { if (data?.completed) setCompleted((current) => [...new Set([...current, ...data.completed!])]); })
+          .catch(() => {});
         setStreak(Number(localStorage.getItem("opening-lab-streak") || "0"));
       } catch {
         // A blocked storage API should never block the trainer itself.
@@ -177,6 +182,7 @@ export function OpeningTrainer() {
       try {
         localStorage.setItem("opening-lab-completed", JSON.stringify(next));
       } catch {}
+      fetch("/api/progress", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ completed: next }) }).catch(() => {});
       setFeedback({
         kind: "complete",
         text: "Line complete — you found every move.",
@@ -336,18 +342,8 @@ export function OpeningTrainer() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <div className="brand" aria-label="Opening Lab home">
-          <span className="brand-mark">♞</span>
-          <span>OPENING<span>LAB</span></span>
-        </div>
-        <div className="topbar-stats">
-          <span><Flame size={17} /> {streak} streak</span>
-          <span><Trophy size={17} /> {completed.length} learned</span>
-        </div>
-      </header>
-
+    <main className="trainer-shell">
+      <div className="trainer-summary"><span><Flame size={17} /> {streak} streak</span><span><Trophy size={17} /> {completed.length} learned</span></div>
       <div className="workspace">
         <aside className="library-panel">
           <div className="panel-heading">
@@ -569,9 +565,6 @@ export function OpeningTrainer() {
           </div>
         </aside>
       </div>
-      <footer>
-        Opening data from <a href="https://github.com/lichess-org/chess-openings" target="_blank" rel="noreferrer">lichess-org/chess-openings</a> · CC0
-      </footer>
     </main>
   );
 }

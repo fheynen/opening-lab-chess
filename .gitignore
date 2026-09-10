@@ -36,7 +36,12 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+*.tsbuildinfo
 /dist/
 /.wrangler/
 /outputs/
 /work/
+
+# local reference repositories (logic is ported into the web app)
+/chess-coach-mcp/
+/offline-chess-puzzles/

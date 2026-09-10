@@ -1,5 +1,5 @@
-import { OpeningTrainer } from "./OpeningTrainer";
+import { getChatGPTUser } from "./chatgpt-auth";
+import { HomeDashboard } from "./components/HomeDashboard";
 
-export default function Home() {
-  return <OpeningTrainer />;
-}
+export const dynamic = "force-dynamic";
+export default async function Home() { const user = await getChatGPTUser(); return <HomeDashboard signedIn={Boolean(user)} />; }

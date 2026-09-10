@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { getChatGPTUser } from "./chatgpt-auth";
+import { SiteHeader } from "./components/SiteHeader";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -7,9 +9,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const baseUrl = new URL(`${protocol}://${host}`);
-  const title = "Opening Lab — Chess Opening Trainer";
+  const title = "Opening Lab — Study. Review. Improve.";
   const description =
-    "Build a practical chess repertoire with interactive Sicilian, Dutch, French, Scandinavian, and Queen’s Gambit training.";
+    "Build your opening repertoire, review your games, discover recurring weaknesses, and train the positions that matter.";
 
   return {
     metadataBase: baseUrl,
@@ -19,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       type: "website",
-      images: [{ url: "/og.png", width: 1792, height: 933, alt: "Opening Lab — Build Your Repertoire" }],
+      images: [{ url: "/og.png", width: 1736, height: 906, alt: "Opening Lab — Study. Review. Improve." }],
     },
     twitter: {
       card: "summary_large_image",
@@ -37,7 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><LayoutBody>{children}</LayoutBody></body>
     </html>
   );
+}
+
+async function LayoutBody({ children }: { children: React.ReactNode }) {
+  const user = await getChatGPTUser();
+  return <><SiteHeader user={user ? { displayName: user.displayName, email: user.email } : null} />{children}<footer className="site-footer">Opening data and puzzles from Lichess · Engine analysis by Stockfish · Opening Lab keeps chess facts grounded in engine output.</footer></>;
 }
